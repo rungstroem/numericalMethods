@@ -1,0 +1,98 @@
+#include "nr3.h"
+#include "utilities.h"
+#include <iostream>
+#include <cmath>
+
+Doub e = 2.728;
+
+Doub f1(Doub x){
+    return cos(pow(x,2))*pow(e,-x);
+}
+
+Doub f2(Doub x){
+    return pow(x,0.5)*cos(pow(x,2))*pow(e,-x);
+}
+
+Doub f3(Doub x){
+    return 1000*pow(e,(-1/x))*pow(e,(-1/(1-x)));
+}
+
+Doub f4(Doub x){
+    return (1/pow(x,0.5))*cos(pow(x,2))*pow(e,-x);
+}
+
+template<class T>
+Doub Midpoint(Doub x0, Doub xn, int n, T &func){
+    Doub h = (xn-x0)/n;
+    Doub Si = 0;
+    Doub Sf = 0;
+    for(int i = 0;i<n;i++){
+       Si = h*func(x0+i*h);
+       Sf += Si;
+       Si = 0;
+    }
+
+    return Sf;
+}
+
+template<class T>
+Doub Trapezoidal(Doub x0, Doub xn, int n, T &func){
+    Doub h = (xn-x0)/n;
+    Doub Si = (func(x0)+func(xn));
+    Doub Sf = 0;
+
+    for(int i = 1; i < n; i++){
+        Si += 2*func(x0+i*h);
+    }
+
+    Sf = 0.5*h*Si;
+
+    return Sf;
+}
+
+template<class T>
+Doub Simpsons(Doub x0, Doub xn, int n, T &func){
+    Doub h = (xn-x0)/n;
+    Doub Si = 0;
+    Doub Sf = 0;
+    Doub S = 0;
+    for(int i = 1; i<n;i++){
+        if(i%2==0){
+            Si += 2*func(x0+i*h);
+        }
+        else{
+            Sf += 4*func(x0+i*h);
+        }
+    }
+    
+    S = (1.0/3.0)*h*(func(x0)+func(xn)+Si+Sf);
+    
+    return S;
+}
+
+Doub alpha = 2.0;
+
+template<class T>
+Doub alpha_k(int i, T &func, T &func2){
+    Doub alpha_k = 0;
+    alpha_k = ((func(0,1,i-2,func2)-func(0,1,i-1,func2))/(func(0,1,i-1,func2)-func(0,1,i,func2)));
+    return (log(alpha_k)/log(alpha));
+}
+
+template<class T>
+Doub RicExtrap(int n, T &func, T &func2){
+    Doub Ri = 0;
+    for(int i = 0;i<n;i++){
+        Ri = func(0,1,i+1,func2)+ ( func(0,1,i+1,func2) - func(0,1,i,func2) )/ alpha_k(i,func2);    
+    }
+
+	return Ri;
+}
+
+int main(){
+    cout << Midpoint(0,1,200,f1)<< "\n";
+    //cout << Trapezoidal(0,1,2,f1) << "\n";
+    //cout << Simpsons(0,1,200,f1) << "\n";
+
+    cout << RicExtrap(200, Midpoint, f1);
+}
