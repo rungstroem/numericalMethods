@@ -1,0 +1,157 @@
+#include "nr3.h"
+#include "utilities.h"
+#include <iostream>
+#include "ludcmp.h"
+#include "qrdcmp.h"
+#include "roots_multidim.h"
+
+using namespace std;
+
+/*
+struct f1{  //Lo
+    Doub operator() (Doub L, Doub alpha, Doub H){
+        return (L/(1+alpha*H));
+    }
+};
+
+struct f2{  //L
+    Doub operator() (Doub a, Doub x){
+        return (2*a*sinh(x/a));
+    }
+};
+
+struct f3{  //p
+    Doub operator() (Doub a, Doub x){
+        return (a*cosh(x/a)-1);
+    }
+};
+
+struct f4{  //x
+    Doub operator() (Doub d, Doub K, Doub theta){
+        return ((d-2*K*cos(theta))/2);
+    }
+};
+
+struct f5{  //theta
+    Doub operator() (Doub v, Doub w, Doub Lo, Doub phi){
+        return (atan((1+v/(w*Lo))*tan(phi)));
+    }
+};
+
+struct f6{  //phi
+    Doub operator() (Doub v, Doub w, Doub Lo, Doub theta){
+        return (atan((tan(theta)/(1+(v/(w*Lo))))));
+    }
+};
+
+struct f7{  //a
+    Doub operator() (Doub x, Doub phi){
+        return (x/(asinh(tan(phi))));
+    }
+};
+
+struct f8{  //H
+    Doub operator() (Doub w, Doub Lo, Doub phi){
+        return ((w*Lo)/(2*sin(phi)));
+    }
+};
+*/
+
+/*
+VecDoub vecfunc(VecDoub_I x){
+	VecDoub results(8);
+
+	results[0] = L/(1+alpha*H);
+	results[1] = 2*a*sinh(x/a);
+	results[2] = a*cosh(x/a)-1;
+	results[3] = (d-2*K*cos(theta))/2;
+	results[4] = atan((1+v/(w*Lo))*tan(phi));
+	results[5] = atan((tan(theta)/(1+(v/(w*Lo)))));
+	results[6] = x/(asinh(tan(phi)));
+	results[7] = (w*Lo)/(2*sin(phi));
+
+}
+*/
+
+//Variables
+Doub H = 500;
+Doub a = 40;
+Doub Lo = 10;
+Doub L = 10;
+Doub p = 10;
+Doub x = 10;
+Doub theta = 10;
+Doub phi = 10;
+Doub v = 120;
+Doub K = 2.5;
+Doub w = 4.0;
+Doub alpha = 2*pow(10,-7);
+Doub d = 30;
+Doub n = 5.0;
+
+bool CheckFlag = false;
+
+
+VecDoub_IO vec_x(8);    //x-vector
+VecDoub vec_f(8);   //f-vector, vector of functions
+//VecDoub n(6);
+
+//Functions
+Doub f1(Doub L, Doub alpha, Doub H){
+	return (L/(1+alpha*H));
+}
+Doub f2(Doub a, Doub x){
+	return (2*a*sinh(x/a));
+}
+Doub f3(Doub a, Doub x){
+	return (a*cosh(x/a)-1);
+}
+Doub f4(Doub d, Doub K, Doub theta){
+	return ((d-2*K*cos(theta))/2);
+}
+Doub f5(Doub v, Doub w, Doub Lo, Doub phi){
+	return (atan((1+v/(w*Lo))*tan(phi)));
+}
+Doub f6(Doub v, Doub w, Doub Lo, Doub theta){
+	return (atan((tan(theta)/(1+(v/(w*Lo))))));
+}
+Doub f7(Doub x, Doub phi){
+	return (x/(asinh(tan(phi))));
+}
+Doub f8(Doub w, Doub Lo, Doub phi){
+	return ((w*Lo)/(2*sin(phi)));
+}
+
+int main(){
+/*  
+n[0] = 5.0;
+n[1] = 2.0;
+n[2] = 1.0;
+n[3] = 0.5;
+n[4] = 0.2;
+n[5] = 0.1;
+*/
+
+vec_x[0] = Lo;
+vec_x[1] = L;
+vec_x[2] = p;
+vec_x[3] = x;
+vec_x[4] = theta;
+vec_x[5] = phi;
+vec_x[6] = a;
+vec_x[7] = H;
+
+vec_f[0] = f1(L,alpha,H);
+vec_f[1] = f2(a, x);
+vec_f[2] = f3(a, x);
+vec_f[3] = f4(d,K,theta);
+vec_f[4] = f5(v,w,Lo,phi);
+vec_f[5] = f6(v,w,Lo,theta);
+vec_f[6] = f7(x,phi);
+vec_f[7] = f8(w,Lo,phi);
+
+
+
+newt(vec_x,CheckFlag,vec_f);
+
+}
