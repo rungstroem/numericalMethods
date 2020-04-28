@@ -1,0 +1,171 @@
+#include <iostream>
+#include <fstream>
+#include "nr3.h"
+#include "ludcmp.h"
+#include "cholesky.h"
+#include "utilities.h"
+#include <math.h>
+using namespace std;
+
+void pont_data(){
+
+VecDoub xPont(40); VecDoub yPont(40);
+ifstream Pont("PontiusData.dat");
+for(int i = 0; i < 40; i++) {
+	Pont >> yPont[i];
+	Pont >> xPont[i];
+}
+
+// Normal Equation for solving problem
+// (AT*A)*a = AT*b
+// A design matrix,
+// AT transpose of A
+// a the vector to solve fore - typically named x
+// b vector with result from equation A*x=b
+
+// Creating matrix A from data, object xPont
+MatDoub A(40,3);
+for(int i=0;i<40;i++){
+	A[i][0] = 1;
+	A[i][1] = xPont[i];
+	A[i][2] = xPont[i]*xPont[i];
+}
+
+// Creating vector b from data, object yPont
+VecDoub b(40);
+for(int i=0;i<40;i++){
+	b[i] = yPont[i];
+}
+
+// Transposing matrix A
+MatDoub AT= util::Transpose(A);
+
+// From normal equation
+// AT*A = C
+// Capital C is the resulting matrix
+// In book capital C is alpha
+//
+// AT*b = c
+// lowercase c is the resulting vector
+// In book lowercase c is beta
+
+// Creating matrix C
+MatDoub C = operator*(AT, A);
+// Creating vector c
+VecDoub c = operator*(AT, b);
+
+// LU decomposition solve of linear equation problem
+LUdcmp lu(C);
+VecDoub_O x(3);		//a in (AT*A)*a = AT*b	C*a=c
+
+lu.solve(c, x);
+
+// Cholesky solve of the linear equation problem
+Cholesky C_cho(C);
+VecDoub_O x_cho(3);	//a in (AT*A)*a = AT*b	C*a=c
+
+C_cho.solve(c, x_cho);
+
+//util::print(A, "Matrix A");
+//util::print(AT, "Transposed A");
+util::print(C, "C or alpha matrix AT*A");
+util::print(c, "c or beta vector AT*b");
+util::print(x, "LUdcmp result vector a, also called x");
+util::print(x_cho, "Cholesky result vector a, also called x");
+
+
+// Checking result 
+// calculate C*a = c
+VecDoub c_lu = operator*(C,x);		//For LU dcmp
+util::print(c_lu, "c calculated from C*a - LU dcmp");
+VecDoub c_cho = operator*(C, x_cho);	//For Cholesky
+util::print(c_cho, "c calculated from C*a - Cholesky");		
+
+
+}
+
+void fili_data(){
+VecDoub xFilip(82); VecDoub yFilip(82);
+ifstream Filip("FilipData.dat");
+for(int i = 0; i < 82; i++) {
+	Filip >> yFilip[i];
+	Filip >> xFilip[i];
+}
+
+// Normal Equation for solving problem
+// (AT*A)*a = AT*b
+// A design matrix,
+// AT transpose of A
+// a the vector to solve fore - typically named x
+// b vector with result from equation A*x=b
+
+// Creating Matrix A
+MatDoub A(82,11);
+for(int i=0;i<82;i++){
+	for(int j=0;j<11;j++){
+		A[i][j] = pow(xFilip[i],j);
+	}
+}
+
+// Creating vector b
+VecDoub b(82);
+for(int i=0;i<82;i++){
+	b[i] = yFilip[i];
+}
+
+// Transposing matrix A
+MatDoub AT=util::Transpose(A);
+
+// From normal equation
+// AT*A = C
+// Capital C is the resulting matrix
+// In book capital C is alpha
+//
+// AT*b = c
+// lowercase c is the resulting vector
+// In book lowercase c is beta
+
+// Creating Matrix C
+MatDoub C= operator*(AT,A);
+
+// Creating vector c
+VecDoub c= operator*(AT,b);
+
+// LU decomposition solve of linear equation problem
+LUdcmp lu(C);
+VecDoub_O x(11);		//a in (AT*A)*a = AT*b	C*a=c
+
+lu.solve(c, x);
+
+// Cholesky solve of the linear equation problem
+//Cholesky C_cho(C);
+//VecDoub_O x_cho(11);	//a in (AT*A)*a = AT*b	C*a=c
+
+//C_cho.solve(c, x_cho);
+
+//util::print(A, "Matrix A");
+//util::print(AT, "Transposed A");
+util::print(C, "C or alpha matrix AT*A");
+util::print(c, "c or beta vector AT*b");
+util::print(x, "LUdcmp result vector a, also called x");
+//util::print(x_cho, "Cholesky result vector a, also called x");
+
+
+// Checking result 
+// calculate C*a = c
+VecDoub c_lu = operator*(C,x);		//For LU dcmp
+util::print(c_lu, "c calculated from C*a - LU dcmp");
+//VecDoub c_cho = operator*(C, x_cho);	//For Cholesky
+//util::print(c_cho, "c calculated from C*a - Cholesky");		
+
+
+}
+
+
+
+int main() {
+//pont_data();
+ fili_data();
+
+return 0;
+}
