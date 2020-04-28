@@ -1,0 +1,88 @@
+#include "nr3.h"
+#include "utilities.h"
+#include <iostream>
+#include "rk4.h"
+#include <fstream>
+#include <math.h>
+using namespace std;
+
+Doub M = 5.68*pow(10.0,26.0);
+Doub g = 4.98*pow(10.0,-10.0);
+Doub m1 = 9.20*pow(10.0,18.0);
+Doub m2 = 9.20*pow(10.0,18.0);
+
+Doub r(Doub x, Doub y){
+    return pow((pow(x,2.0) + pow(y,2.0)),0.5);
+}
+
+Doub R(Doub x1, Doub x2, Doub y1, Doub y2){
+    return pow((pow((x1-x2),2.0) + pow((y1-y2),2.0)),0.5);
+}
+
+
+void derivs(Doub t, VecDoub_I &z, VecDoub_O &dzdt){
+    dzdt[0] = z[4]; 
+	dzdt[1] = z[5];
+	dzdt[2] = z[6];
+	dzdt[3] = z[7];
+	dzdt[4] = -((M*g)/pow(r(z[0],z[1]),3)) * z[0] + ((m2*g)/pow(R(z[0],z[2],z[1],z[3]),3)) * (z[2]-z[0]); //x1
+	dzdt[5] = -((M*g)/pow(r(z[0],z[1]),3)) * z[1] + ((m2*g)/pow(R(z[0],z[2],z[1],z[3]),3)) * (z[3]-z[1]); //y1
+	dzdt[6] = -((M*g)/pow(r(z[2],z[3]),3)) * z[2] - ((m1*g)/pow(R(z[0],z[2],z[1],z[3]),3)) * (z[2]-z[0]); //x2
+	dzdt[7] = -((M*g)/pow(r(z[2],z[3]),3)) * z[3] - ((m1*g)/pow(R(z[0],z[2],z[1],z[3]),3)) * (z[3]-z[1]); //y2
+}
+
+void convert(VecDoub &in, VecDoub &out){
+    out[0] = pow( (pow(in[0],2.0) + pow(in[1],2.0)),0.5);
+    out[1] = pow( (pow(in[2],2.0) + pow(in[3],2.0)),0.5);
+    out[2] = (((atan2(abs(in[1]),abs(in[0]))) - (atan2(abs(in[3]),abs(in[2])))));
+}
+
+
+
+int main(){
+    
+    Doub b = 500;
+    Doub h = 1.0*pow(10.0,-3.0);
+
+    VecDoub zinit(8);
+    zinit[0] = 0.0; //x1
+    zinit[1] = 152870.0;    //y1
+    zinit[2] = 0.0; //x2
+    zinit[3] = -153130.0;   //y2
+    zinit[4] = -1360278.1;  //dx1
+    zinit[5] = 0.0; //dy1
+    zinit[6] = 1359122.8;   //dx2
+    zinit[7] = 0;   //dy2
+    VecDoub z(8);
+    VecDoub_O dzdt(8);
+    VecDoub_O zout(8);
+
+    VecDoub polar(5);
+
+    Doub t = 0.0;
+    derivs(t, zinit, dzdt);
+    z = zinit;
+    //util::print(dzdt);
+    t += h;
+
+    ofstream dataset ("/home/runge/Desktop/yolo.csv");
+
+    if(dataset.is_open()){
+        for(; t < b; t += h){
+            derivs(t, z, dzdt);
+            rk4(z, dzdt, t, h, zout, derivs);
+            z = zout;
+            
+            //Polar coordinates
+            convert(zout, polar);
+            polar[3] = (polar[0]-polar[1]);
+            polar[4] = t;
+
+            dataset << polar[0] << "," << polar[1] << "," << polar[2] << "," << polar[3] << "," << polar[4] << "\n";
+
+        }
+    }
+    dataset.close();
+    cout << "done\n";
+    return 0;
+}
